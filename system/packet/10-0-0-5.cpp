@@ -227,7 +227,7 @@ void sendSpec(udp uTest_nic)
 int main()
 {
     udp uTest_ctrl;
-    uTest_ctrl.addBind((char *)"192.168.1.200", 40000);
+    uTest_ctrl.addBind((char *)"192.168.1.202", 40000);
     uTest_ctrl.addRemote((char *)"192.168.1.220", 50000);
 
     udp uTest_nic;
@@ -239,8 +239,8 @@ int main()
 
     thread t1(sendInt, uTest_ctrl, rTest);
     thread t2(receiveInt, uTest_ctrl, uTest_nic);
-    int tor[]={5, 6, 7};
-    thread t3(route, uTest_nic, uTest_ctrl, 4, tor);
+    int tor[]={4, 5, 7};
+    thread t3(route, uTest_nic, uTest_ctrl, 6, tor);
     thread t4(sendSpec, uTest_nic);
     t1.join();
     t2.join();

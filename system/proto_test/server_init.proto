@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message packetIn {
+    string serverCtrlIp = 1;
+    string serverNicIp=2;
+}
+
+message packetOut {
+    int32 torId = 1;
+    int32 randVal = 2;
+}
+
+
+

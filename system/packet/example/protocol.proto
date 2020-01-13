@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+message packet {
+    ethernet_t ethernet = 1;
+    type_1_t type_1 = 2;
+    sr_hdr_t sr_hdr=3;
+    repeated sr_t sr=4;
+    type_2_t type_2=5;
+    int_option_t int_option=6;
+}
+
+message ethernet_t {
+    int64 dstAddr = 1;
+    int64 srcAddr = 2;
+}
+
+message type_1_t {
+    string type = 1;
+}
+
+message sr_hdr_t {
+    string rsvd = 1;
+    string sr_length = 2;
+}
+
+message sr_t {
+    string rsvd = 1;
+    string next_port = 2;
+}
+
+message type_2_t {
+    string type = 1;
+}
+
+message int_option_t {
+    string type_rsvd = 1;
+    string int_num = 2;
+}

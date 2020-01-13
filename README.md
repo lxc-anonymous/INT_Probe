@@ -15,74 +15,82 @@ The distinguishing features of INT-probe are listed as follows:
 3. The extensive evaluation is done on random graphs, US backbone topology and two data center network topologies to show that INT-probe achieves network-wide, cost-effective, stable probing, ready for deployment. It reduces the path number by 81.70% by allowing only 1.22% increase of the total path length for a random graph.
 
 # System
+The system includes six modules: `bmv2_model`, `controller`, `flow_table`, `p4_source_code`, `packet`, `topology`.
 
-The system include three modules:p4app, packet and controller.
+****
 
-## p4app
+## bmv2_model
+The bmv2 target used in the network. 
+### simple_switch
+Simple_switch is one of the P4 software switch targets.
 
-Include p4 source code, implemented source-based INT functrion.
+****
 
-header.p4, parser.p4, app.p4: p4 source code
+## p4_source_code
+The P4 file which defines the packet processing logic of the switches.
+### my_int.py
+Line 9-51: the header definition.
+Line 57-99: the parse for each type of packets.
+Line 113-221: the match-action field. The switch will forward the data packets according to its SR field and add the INT header into the INT probes.
+### my_int.json
+The output of compiling `my_int.p4`.
+### Others
+Not used.
 
-### header.p4
+****
 
-Including Headers and Metadatas
+## topology
+Create the virtual network.
+### clos.py
+Create the clos architecture network with customied scale.
+### p4_mininet.py
+The reference for adding P4 switches into the network.
 
-### parser.p4
+****
 
-Including parser, deparser and checksum calculator.
+## flow_table
+Include the flow tables, flow table generator.
+### ./flow_table
+The flow tables.
+### ./flow_table/flow_table_gen.py
+Generate the flow tables for customized clos architecture topology. And the output files will be in `flow_table`.
+### ./flow_table/command.sh
+Dump the flow tables into the P4 switches.
+### ./flow_table/simple_switch_CLI
+The control plane of simple switches.
 
-### app.p4
+****
 
-The main part of the p4 program. Including SR/INT/ARPProxy/UDP/ECMP tables.
+## packet
+Include the packet sending and receiving scripts.
+### ./send
+The packet sending scripts.
+### ./send/send_int_probe.py
+Send int probes.
+### ./send/send_udp.py
+Send data packets.
+### ./receive
+The packet receiving and processing scripts.
+### ./receive/parse.py
+Parse the packets.
+### ./receive/receive.py
+Receive all packets and use `parse.py` to parse the packets. And store the INT information into the database.
+### ./receive/processor.py
+Not used.
 
-### app.json
-
-The json file that compiled from app.p4 by p4c compiler.
-
-## packet:
-
-Send & receive INT packet module which run in the hosts and the database config.
-
-### int_data.sql
-
-The SQL Table which is used to initalize the database.
-
-### receiveint.c
-
-Used to receive int packet, and parse them, then put them into database.
-
-### sendint.py
-
-Use the given traverse path generate the INT packet and encode SR info.
+****
 
 ## controller
+The source code of the controller.
+### controller.py
+The controller will subscribe the Redis database and catches all the expire events. And use these information for failure localization.
 
-Generate Mininet network, send SR & INT command to hosts and get result from database.
+***
 
-### app.py
+# Requisite third parties
+P4 development enviornment: behavioral_model, p4c  
+Database: Redis. And modify the configuration of redis to enable the unix socket and sub/pub function.
 
-The main controller. Use topoGraph and hostList generate netwrok, then use path to traverse the netwrok and collect INT info.
-
-### dbParser.py
-
-The module which is used in app.py to get INT info from database.
-
-### device.py
-
-The module which is used in app.py to generate the virtual devices(Hosts/Switches).
-
-### p4_mininet.py
-
-The module which is used in mininiet to generate P4 devices.
-
-### switchRuntime.py
-
-The module which is used in app.py to down tables using thrift RPC.
-
-### topoMaker.py
-
-The module which is used in app.py to generate network topo.
 
 # Euler trail-based path planning algorithm
 
@@ -131,44 +139,3 @@ The project of Blossom V, which is to solve the minimum weight perfect matching 
 ### GraphGenerator
 
 This folder includes some solutions to generate different topologies and depots. The python files prefixed with SNDlibGraphGen* can generate US backbone network topology. The files prefixed with randomGraphGen* generate graphs of different sizes randomly. fatTreeGen.py and spineLeafGen.py are both classic data center network topologies.
-
-# How to run
-
-## Run system
-
-If you installed the dependencies and configured the database(mysql,in`/system/packet/int_data.sql`) successfully, then you can run the system with commands below:
-
-```
-cd system/controller/
-python app.py
-```
-
-You can change `graph`,`hostList` and `paths` in `app.py` to test your own network and you own INT path.
-
-## Run Euler trail-based path planning algorithm
-
-```
-cd Euler_trail-based_path_planning_algorithm/algorithm/
-python optimal_find_path_unbalance.py
-```
-
-## Run MDCPP_set algorithm
-
-Firstly, you can generate the data files of different topologies using python2.7:
-
-```
-cd MDCPP_set/GraphGenerator/
-```
-
-Then, compile the MDCPP_set algorithm:
-
-```
-cd MDCPP_set/
-make
-```
-
-Finally, run the MDCPP_set algorithm with the data files of topologies:
-
-```
-./testMDCPP topology.txt
-```
